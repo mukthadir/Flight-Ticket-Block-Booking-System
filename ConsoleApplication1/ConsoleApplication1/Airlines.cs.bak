@@ -1,0 +1,112 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+
+namespace FlightBlockSystem
+{
+    public delegate void priceCutEvent(Int32 p);
+
+    
+    public class Airlines
+    {
+        static Random range = new Random();
+
+        public static event priceCutEvent priceCut;
+        public static Int32 numberOfTickets = 500;
+        public static Int32 numberOfBookedTickets = 0;
+        public static Int32 numberOfTicketsToBeBooked;
+        public static Int32 priceCutCount = 0;
+
+        private static Int32 ticketPrice = 650;
+        private static Int32 currentPrice;
+        private static String airlineName;
+        private static object threadLockAir = new object();
+        public Int32 getPrice()
+        {
+            return ticketPrice;
+        }
+
+        public static Int32 getCurrentPrice()
+        {
+            return currentPrice;
+        }
+
+        public static Int32 getNumberOfUnbookedTickets()
+        {
+            return numberOfTickets - numberOfBookedTickets;
+        }
+
+        public String getThreadName()
+        {
+            String name = airlineName; 
+            return name;
+        }
+
+        public void changePrice()
+        {
+            currentPrice = pricingModel();
+            if (currentPrice < ticketPrice)
+            {
+                if (priceCut != null)
+                {
+                  //  airlineName = Thread.CurrentThread.Name;
+                    priceCut(currentPrice);
+                    // ticketPrice = currentPrice;
+                }
+            }
+            else {
+                Console.WriteLine("Price Cut has not been made.");
+            }
+            //airlineName = Thread.CurrentThread.Name;
+            ticketPrice = currentPrice;
+        }
+
+        public static Int32 pricingModel()
+        {
+            Random rand = new Random();
+            float temp = (numberOfBookedTickets / float.Parse(numberOfTickets.ToString())) * 100;
+            return rand.Next(100, 900) + (Int32) temp;
+        }
+
+        public void airlineFunction()
+        {
+            while (priceCutCount < 5)
+            {
+                changePrice();
+                airlineName = Thread.CurrentThread.Name;
+                for (Int32 i = 0; i < 5; i++)
+                {
+                    Thread OPThread = new Thread(new ThreadStart(OrderProcessor.Processor));
+                    OPThread.Name = "OrderProcessing " + Thread.CurrentThread.Name + i;
+                    OPThread.Start();
+                }
+            }
+        }
+
+        //MultiBufferCell buffer = new MultiBufferCell();
+        //public void getObjectOrder()
+        //{
+        //    String strObj = MultiBufferCell.getOne();
+        //    OrderClass orderObject = new OrderClass();
+        //    orderObject = Decoder.getDecodedValue(strObj);
+        //}
+
+        //public static OrderClass Decoder(string strObj)
+        //{
+        //    String[] attributes = strObj.Split(',');
+        //    for (int i = 0; i < attributes.Length; i++)
+        //        Console.WriteLine("Attributes to be decoded: " + attributes[i]);
+
+        //    OrderClass orderObj = new OrderClass();
+        //    orderObj.receiverId = Int32.Parse(attributes[0]);
+        //    orderObj.senderId = Int32.Parse(attributes[1]);
+        //    orderObj.unitPrice = Double.Parse(attributes[2]);
+        //    orderObj.amount = Int32.Parse(attributes[3]);
+        //    orderObj.cardNo = Int32.Parse(attributes[4]);
+
+        //    return orderObj;
+        //}
+    }
+}

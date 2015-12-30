@@ -1,0 +1,106 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+
+namespace FlightBlockSystem
+{
+    class TravelAgency
+    {
+        public static BankService bankAccounts;
+
+        public void travelAgencyFunc()
+        {
+            while (Airlines.priceCutCount < 5)
+            {
+                Airlines air = new Airlines();
+                Int32 originalPrice = air.getPrice();
+                Random rand = new Random();
+                int card = 0;
+                Int32 p = Airlines.getCurrentPrice();
+                //Int32 numberOfTickets = air.getNumberOfUnbookedTickets();
+                String airlineThread = air.getThreadName();
+
+                //Console.WriteLine("Lets check thread id " + Thread.CurrentThread.ManagedThreadId);
+
+                Int32 ticketsToOrder = rand.Next(1, 20);
+
+                if (p < originalPrice)
+                {
+                    // Create a orderClass object for current booking
+                    OrderClass order = new OrderClass();
+
+                    //Console.WriteLine("Lets see bank acounts *********************** " + bankAccounts.balance[0]);
+
+                    if (Thread.CurrentThread.Name.Equals("Travel Agency 1"))
+                    {
+                        // Console.WriteLine("never here");
+                        card = bankAccounts.creditCardNumber[0];
+                        //Console.WriteLine("Final check " + bankAccounts.creditCardNumber[0]);
+                        order.cardNo = bankAccounts.creditCardNumber[0];
+                        //Console.WriteLine("1   " + order.cardNo);
+                    }
+                    else if (Thread.CurrentThread.Name.Equals("Travel Agency 2"))
+                    {
+
+                        order.cardNo = bankAccounts.creditCardNumber[1];
+                        //Console.WriteLine("2   " + order.cardNo);
+
+                    }
+                    else if (Thread.CurrentThread.Name.Equals("Travel Agency 3"))
+                    {
+                        order.cardNo = bankAccounts.creditCardNumber[2];
+                        //Console.WriteLine("3   " + order.cardNo);
+                    }
+                    else if (Thread.CurrentThread.Name.Equals("Travel Agency 4"))
+                    {
+                        order.cardNo = bankAccounts.creditCardNumber[3];
+                        //Console.WriteLine("4 " + order.cardNo);
+                    }
+                    else if (Thread.CurrentThread.Name.Equals("Travel Agency 5"))
+                    {
+                        order.cardNo = bankAccounts.creditCardNumber[4];
+                        //Console.WriteLine("5   " + order.cardNo);
+                    }
+                    //Console.WriteLine("Thread - {0}, card no - {1}", Thread.CurrentThread.Name, card);
+
+                    order.senderId = Thread.CurrentThread.Name;
+
+                    //  order.cardNo = bankAccounts._creditCardNumber[Main]
+
+                    order.receiverId = airlineThread;
+                    order.amount = ticketsToOrder;
+                    order.unitPrice = p;
+
+                    String startTime = DateTime.Now.ToString("HH:mm:ss tt");
+                    MultiBufferCell.setOne(Encoder(order));
+
+                    String confirmation = ConfirmationClass.getOne();
+                    String endTime = DateTime.Now.ToString("HH:mm:ss tt");
+
+                    Console.WriteLine(confirmation);
+                    Console.WriteLine("Order was sent at {0} by {1}. Order was processed at {2} by the airline.", startTime, Thread.CurrentThread.Name, endTime);
+                }
+            }
+        }
+
+        public void ticketsOnSale(Int32 p)
+        {
+            Airlines.priceCutCount++;
+            Console.WriteLine("Tickets are available for sale. Price cut event has been generated {0} - {1}", Thread.CurrentThread.Name, p);
+            Thread.Sleep(1000);
+        }
+
+        public static string Encoder(OrderClass myObject)
+        {
+            return myObject.senderId + "," + myObject.cardNo + "," + myObject.receiverId + "," + myObject.amount + "," + myObject.unitPrice;
+        }
+
+        public static void BankObject(BankService bankObject)
+        {
+            bankAccounts=bankObject;
+                
+        }
+    }
+}
